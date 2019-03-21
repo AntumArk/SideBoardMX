@@ -108,6 +108,8 @@ void Error_Handler(void);
 #define OFF_PIN_GPIO_Port GPIOA
 #define LEFT_TIM_UL_PIN_Pin GPIO_PIN_7
 #define LEFT_TIM_UL_PIN_GPIO_Port GPIOA
+#define RIGHT_U_CUR_PIN_Pin GPIO_PIN_4
+#define RIGHT_U_CUR_PIN_GPIO_Port GPIOC
 #define RIGHT_V_CUR_PIN_Pin GPIO_PIN_5
 #define RIGHT_V_CUR_PIN_GPIO_Port GPIOC
 #define LEFT_TIM_VL_PIN_Pin GPIO_PIN_0
@@ -136,6 +138,8 @@ void Error_Handler(void);
 #define RIGHT_TIM_WH_PIN_GPIO_Port GPIOA
 #define CHARGER_PIN_Pin GPIO_PIN_12
 #define CHARGER_PIN_GPIO_Port GPIOA
+#define RIGHT_HALL_U_PIN_Pin GPIO_PIN_10
+#define RIGHT_HALL_U_PIN_GPIO_Port GPIOC
 #define RIGHT_HALL_V_PIN_Pin GPIO_PIN_11
 #define RIGHT_HALL_V_PIN_GPIO_Port GPIOC
 #define RIGHT_HALL_W_PIN_Pin GPIO_PIN_12

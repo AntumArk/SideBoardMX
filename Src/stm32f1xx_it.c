@@ -244,13 +244,13 @@ void DMA1_Channel1_IRQHandler(void)
   int ur, vr, wr;
 
   //determine next position based on hall sensors
-  uint8_t hall_ul = !(LEFT_HALL_U_PORT->IDR & LEFT_HALL_U_PIN);
-  uint8_t hall_vl = !(LEFT_HALL_V_PORT->IDR & LEFT_HALL_V_PIN);
-  uint8_t hall_wl = !(LEFT_HALL_W_PORT->IDR & LEFT_HALL_W_PIN);
+  uint8_t hall_ul = !(LEFT_HALL_U_PIN_GPIO_Port->IDR & LEFT_HALL_U_PIN_Pin);
+  uint8_t hall_vl = !(LEFT_HALL_V_PIN_GPIO_Port->IDR & LEFT_HALL_V_PIN_Pin);
+  uint8_t hall_wl = !(LEFT_HALL_W_PIN_GPIO_Port->IDR & LEFT_HALL_W_PIN_Pin);
 
-  uint8_t hall_ur = !(RIGHT_HALL_U_PORT->IDR & RIGHT_HALL_U_PIN);
-  uint8_t hall_vr = !(RIGHT_HALL_V_PORT->IDR & RIGHT_HALL_V_PIN);
-  uint8_t hall_wr = !(RIGHT_HALL_W_PORT->IDR & RIGHT_HALL_W_PIN);
+  uint8_t hall_ur = !(RIGHT_HALL_U_PIN_GPIO_Port->IDR & RIGHT_HALL_U_PIN_Pin);
+  uint8_t hall_vr = !(RIGHT_HALL_V_PIN_GPIO_Port->IDR & RIGHT_HALL_V_PIN_Pin);
+  uint8_t hall_wr = !(RIGHT_HALL_W_PIN_GPIO_Port->IDR & RIGHT_HALL_W_PIN_Pin);
 
   uint8_t halll = hall_ul * 1 + hall_vl * 2 + hall_wl * 4;
   posl          = hall_to_pos[halll];
@@ -299,10 +299,10 @@ void DMA1_Channel1_IRQHandler(void)
   buzzerTimer++;
   if (buzzerFreq != 0 && (buzzerTimer / 5000) % (buzzerPattern + 1) == 0) {
     if (buzzerTimer % buzzerFreq == 0) {
-      HAL_GPIO_TogglePin(BUZZER_PORT, BUZZER_PIN);
+      HAL_GPIO_TogglePin(BUZZER_PIN_GPIO_Port, BUZZER_PIN_Pin);
     }
   } else {
-      HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, 0);
+      HAL_GPIO_WritePin(BUZZER_PIN_GPIO_Port, BUZZER_PIN_Pin, 0);
   }
 
   //update PWM channels based on position
