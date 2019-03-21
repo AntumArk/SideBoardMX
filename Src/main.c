@@ -108,7 +108,7 @@ void poweroff() {
             buzzerFreq = i;
             HAL_Delay(100);
         }
-        HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 0);
+        HAL_GPIO_WritePin(OFF_PIN_GPIO_Port, OFF_PIN_Pin, 0);
         while(1) {}
     }
 }
@@ -277,7 +277,7 @@ HAL_ADC_Start(&hadc1);
 
 
     // ####### POWEROFF BY POWER-BUTTON #######
-    if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) && weakr == 0 && weakl == 0) {
+    if (HAL_GPIO_ReadPin(BUTTON_PIN_GPIO_Port, BUTTON_PIN_Pin) && weakr == 0 && weakl == 0) {
       enable = 0;
       while (HAL_GPIO_ReadPin(BUTTON_PIN_GPIO_Port, BUTTON_PIN_Pin)) {}
       poweroff();

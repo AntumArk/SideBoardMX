@@ -1,3 +1,4 @@
+ /* USER CODE END 8 */
 #include "main.h"
 
 volatile int posl = 0;
@@ -53,3 +54,4 @@ const uint8_t hall_to_pos[8] = {
 };
 inline void blockPWM(int pwm, int pos, int *u, int *v, int *w);
 inline void blockPhaseCurrent(int pos, int u, int v, int *q);
+ /* USER CODE END 8 */

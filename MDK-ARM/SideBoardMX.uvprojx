@@ -437,6 +437,11 @@
               <FileType>1</FileType>
               <FilePath>../Src/stm32f1xx_hal_msp.c</FilePath>
             </File>
+            <File>
+              <FileName>comms.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\comms.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

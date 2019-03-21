@@ -34,6 +34,7 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include "config.h"
 #include "bldc.h"
+#include "comms.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
