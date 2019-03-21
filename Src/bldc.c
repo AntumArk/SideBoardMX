@@ -1,3 +1,4 @@
+  /* USER CODE BEGIN 7 */
 #include "bldc.h"
 
 
@@ -86,3 +87,4 @@ inline void blockPhaseCurrent(int pos, int u, int v, int *q) {
       // *w = 0;
   }
 }
+ /* USER CODE END 7 */
