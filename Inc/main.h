@@ -33,6 +33,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "config.h"
+#include "bldc.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -153,6 +154,16 @@ void Error_Handler(void);
 #define MILLI_R (R * 1000)
 #define MILLI_PSI (PSI * 1000)
 #define MILLI_V (V * 1000)
+
+//Timer defines
+#define LEFT_TIM TIM8
+#define RIGHT_TIM TIM1
+#define LEFT_TIM_U CCR1
+#define LEFT_TIM_V CCR2
+#define LEFT_TIM_W CCR3
+#define RIGHT_TIM_U CCR1
+#define RIGHT_TIM_V CCR2
+#define RIGHT_TIM_W CCR3
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

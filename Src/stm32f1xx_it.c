@@ -207,7 +207,135 @@ void SysTick_Handler(void)
 void DMA1_Channel1_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
+ DMA1->IFCR = DMA_IFCR_CTCIF1;
+  // HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
 
+  if(offsetcount < 1000) {  // calibrate ADC offsets
+    offsetcount++;
+    offsetrl1 = (adc_buffer.rl1 + offsetrl1) / 2;
+    offsetrl2 = (adc_buffer.rl2 + offsetrl2) / 2;
+    offsetrr1 = (adc_buffer.rr1 + offsetrr1) / 2;
+    offsetrr2 = (adc_buffer.rr2 + offsetrr2) / 2;
+    offsetdcl = (adc_buffer.dcl + offsetdcl) / 2;
+    offsetdcr = (adc_buffer.dcr + offsetdcr) / 2;
+    return;
+  }
+
+  if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time
+    batteryVoltage = batteryVoltage * 0.99 + ((float)adc_buffer.batt1 * ((float)BAT_CALIB_REAL_VOLTAGE / (float)BAT_CALIB_ADC)) * 0.01;
+  }
+
+  //disable PWM when current limit is reached (current chopping)
+  if(ABS((adc_buffer.dcl - offsetdcl) * MOTOR_AMP_CONV_DC_AMP) > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
+    LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
+    //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
+  } else {
+    LEFT_TIM->BDTR |= TIM_BDTR_MOE;
+    //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 0);
+  }
+
+  if(ABS((adc_buffer.dcr - offsetdcr) * MOTOR_AMP_CONV_DC_AMP)  > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
+    RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
+  } else {
+    RIGHT_TIM->BDTR |= TIM_BDTR_MOE;
+  }
+
+  int ul, vl, wl;
+  int ur, vr, wr;
+
+  //determine next position based on hall sensors
+  uint8_t hall_ul = !(LEFT_HALL_U_PORT->IDR & LEFT_HALL_U_PIN);
+  uint8_t hall_vl = !(LEFT_HALL_V_PORT->IDR & LEFT_HALL_V_PIN);
+  uint8_t hall_wl = !(LEFT_HALL_W_PORT->IDR & LEFT_HALL_W_PIN);
+
+  uint8_t hall_ur = !(RIGHT_HALL_U_PORT->IDR & RIGHT_HALL_U_PIN);
+  uint8_t hall_vr = !(RIGHT_HALL_V_PORT->IDR & RIGHT_HALL_V_PIN);
+  uint8_t hall_wr = !(RIGHT_HALL_W_PORT->IDR & RIGHT_HALL_W_PIN);
+
+  uint8_t halll = hall_ul * 1 + hall_vl * 2 + hall_wl * 4;
+  posl          = hall_to_pos[halll];
+  posl += 2;
+  posl %= 6;
+
+  uint8_t hallr = hall_ur * 1 + hall_vr * 2 + hall_wr * 4;
+  posr          = hall_to_pos[hallr];
+  posr += 2;
+  posr %= 6;
+
+  blockPhaseCurrent(posl, adc_buffer.rl1 - offsetrl1, adc_buffer.rl2 - offsetrl2, &curl);
+
+  //setScopeChannel(2, (adc_buffer.rl1 - offsetrl1) / 8);
+  //setScopeChannel(3, (adc_buffer.rl2 - offsetrl2) / 8);
+
+
+  // uint8_t buzz(uint16_t *notes, uint32_t len){
+    // static uint32_t counter = 0;
+    // static uint32_t timer = 0;
+    // if(len == 0){
+        // return(0);
+    // }
+    
+    // struct {
+        // uint16_t freq : 4;
+        // uint16_t volume : 4;
+        // uint16_t time : 8;
+    // } note = notes[counter];
+    
+    // if(timer / 500 == note.time){
+        // timer = 0;
+        // counter++;
+    // }
+    
+    // if(counter == len){
+        // counter = 0;
+    // }
+
+    // timer++;
+    // return(note.freq);
+  // }
+
+
+  //create square wave for buzzer
+  buzzerTimer++;
+  if (buzzerFreq != 0 && (buzzerTimer / 5000) % (buzzerPattern + 1) == 0) {
+    if (buzzerTimer % buzzerFreq == 0) {
+      HAL_GPIO_TogglePin(BUZZER_PORT, BUZZER_PIN);
+    }
+  } else {
+      HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, 0);
+  }
+
+  //update PWM channels based on position
+  blockPWM(pwml, posl, &ul, &vl, &wl);
+  blockPWM(pwmr, posr, &ur, &vr, &wr);
+
+  int weakul, weakvl, weakwl;
+  if (pwml > 0) {
+    blockPWM(weakl, (posl+5) % 6, &weakul, &weakvl, &weakwl);
+  } else {
+    blockPWM(-weakl, (posl+1) % 6, &weakul, &weakvl, &weakwl);
+  }
+  ul += weakul;
+  vl += weakvl;
+  wl += weakwl;
+
+  int weakur, weakvr, weakwr;
+  if (pwmr > 0) {
+    blockPWM(weakr, (posr+5) % 6, &weakur, &weakvr, &weakwr);
+  } else {
+    blockPWM(-weakr, (posr+1) % 6, &weakur, &weakvr, &weakwr);
+  }
+  ur += weakur;
+  vr += weakvr;
+  wr += weakwr;
+
+  LEFT_TIM->LEFT_TIM_U = CLAMP(ul + pwm_res / 2, 10, pwm_res-10);
+  LEFT_TIM->LEFT_TIM_V = CLAMP(vl + pwm_res / 2, 10, pwm_res-10);
+  LEFT_TIM->LEFT_TIM_W = CLAMP(wl + pwm_res / 2, 10, pwm_res-10);
+
+  RIGHT_TIM->RIGHT_TIM_U = CLAMP(ur + pwm_res / 2, 10, pwm_res-10);
+  RIGHT_TIM->RIGHT_TIM_V = CLAMP(vr + pwm_res / 2, 10, pwm_res-10);
+  RIGHT_TIM->RIGHT_TIM_W = CLAMP(wr + pwm_res / 2, 10, pwm_res-10);
   /* USER CODE END DMA1_Channel1_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_adc1);
   /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
@@ -249,7 +377,7 @@ void DMA1_Channel3_IRQHandler(void)
 void DMA1_Channel6_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel6_IRQn 0 */
-
+//TODO insert comms code
   /* USER CODE END DMA1_Channel6_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_usart2_rx);
   /* USER CODE BEGIN DMA1_Channel6_IRQn 1 */
